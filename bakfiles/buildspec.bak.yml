@@ -3,13 +3,16 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo "Updating Amazon Linux 2023 and installing dependencies..."
+      - echo "Updating Amazon Linux and installing dependencies..."
       - dnf update -y
       - echo "Installing Java and Maven..."
-      - dnf install -y java-1.8.0-openjdk maven  # Change to Java 8
+      - dnf install -y java-17-amazon-corretto maven
       - echo "Checking AWS CLI version..."
       - aws --version
       - yum install -y aws-cli
+      # - yum update -y
+      # - amazon-linux-extras enable corretto17
+      # - yum install -y java-17-amazon-corretto maven
       - echo "Java version:"
       - java -version
       - echo "Maven version:"
@@ -23,19 +26,21 @@ phases:
   pre_build:
     commands:
       - echo "Logging in to Amazon ECR..."
+      - aws --version
       - echo "$AWS_REGION"
       - REPOSITORY_URI=${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPOSITORY_NAME}
       - echo "$REPOSITORY_URI"
+      # - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
+      # - $(aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI)
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
-
   build:
     commands:
-      - echo "Build started on `date`"
-      - echo "Running Maven compile..."
-      - mvn clean compile
-      - echo "Running Maven build..."
+      - echo Build started on `date`
+      # - echo Running Maven compile
+      # - mvn clean compile
+      - echo Running Maven build...
       - mvn clean package -DskipTests
       - echo "Building Docker image..."
       - docker build -t $REPOSITORY_URI:latest .
@@ -43,10 +48,10 @@ phases:
 
   post_build:
     commands:
-      - echo "Build completed on `date`"
+      - echo Build completed on `date`
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
-      - echo "Writing image definitions file..."
+      - echo Writing image definitions file...
       - printf '[{"name":"ekart-app","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 
 artifacts:

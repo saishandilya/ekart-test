@@ -1,5 +1,5 @@
-# Use openjdk:8u151-jdk-alpine3.7 base image for Java 8
-FROM openjdk:8u151-jdk-alpine3.7
+# Use Amazon Corretto 17 (Alpine-based for lightweight image)
+FROM amazoncorretto:17-alpine
 
 # Set environment variables
 ENV APP_HOME=/usr/src/app
