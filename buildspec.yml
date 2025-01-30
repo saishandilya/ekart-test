@@ -4,10 +4,12 @@ phases:
   install:
     commands:
       - echo "Updating Amazon Linux and installing dependencies..."
-      - yum update -y
-      - amazon-linux-extras enable corretto17
+      - dnf update -y
       - echo "Installing Java and Maven..."
-      - yum install -y java-17-amazon-corretto maven
+      - dnf install -y java-17-amazon-corretto maven
+      # - yum update -y
+      # - amazon-linux-extras enable corretto17
+      # - yum install -y java-17-amazon-corretto maven
       - echo "Java version:"
       - java -version
       - echo "Maven version:"
